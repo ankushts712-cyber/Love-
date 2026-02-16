@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Letter for Name</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* Background floating hearts */
+        .floating-heart {
+            position: fixed;
+            font-size: 2em;
+            opacity: 0.3;
+            animation: float-background 6s infinite ease-in;
+            z-index: 0;
+        }
+
+        @keyframes float-background {
+            0% {
+                opacity: 0.3;
+                transform: translateY(0) rotate(0deg);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-100vh) rotate(360deg);
+            }
+        }
+
+        .envelope-container {
+            position: relative;
+            z-index: 10;
+            perspective: 1000px;
+        }
+
+        /* Closed Envelope */
+        .envelope {
+            width: 350px;
+            height: 230px;
+            background: linear-gradient(135deg, #fff8fa, #ffe8f0);
+            border: none;
+            border-radius: 20px;
+            position: relative;
+            cursor: pointer;
+            box-shadow: 0 20px 60px rgba(231, 76, 60, 0.25), 
+                        0 0 40px rgba(255, 105, 180, 0.15);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            overflow: hidden;
+        }
+
+        .envelope::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.5), transparent);
+            pointer-events: none;
+            border-radius: 20px;
+        }
+
+        .envelope:hover {
+            transform: translateY(-15px) scale(1.05);
+            box-shadow: 0 30px 80px rgba(231, 76, 60, 0.35),
+                        0 0 50px rgba(255, 105, 180, 0.25);
+        }
+
+        .envelope:active {
+            transform: translateY(-10px) scale(1.02);
+        }
+
+        .envelope::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 55%;
+            background: linear-gradient(135deg, #ff69b4, #ff1493, #e74c3c);
+            clip-path: polygon(0 0, 100% 0, 50% 100%, 0 100%);
+            border-radius: 20px 20px 0 0;
+            transition: all 0.4s ease;
+        }
+
+        .envelope-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 5;
+            animation: gentle-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes gentle-pulse {
+            0%, 100% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.08);
+            }
+        }
+
+        .envelope-text h2 {
+            color: #e74c3c;
+            font-size: 1.8em;
+            margin-bottom: 10px;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .envelope-text p {
+            color: #ff69b4;
+            font-size: 1em;
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+
+        .heart-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+            animation: heart-bounce 0.6s ease-in-out infinite;
+        }
+
+        @keyframes heart-bounce {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+        }
+
+        /* Letter Content (Hidden by default) */
+        .letter {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            width: 90%;
+            max-width: 700px;
+            background: white;
+            padding: 50px 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 80px rgba(0, 0, 0, 0.4);
+            z-index: 100;
+            animation: openLetter 0.6s ease forwards;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        @keyframes openLetter {
+            0% {
+                transform: translate(-50%, -50%) scale(0) rotateX(90deg);
+                opacity: 0;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1) rotateX(0deg);
+                opacity: 1;
+            }
+        }
+
+        .letter.open {
+            display: block;
+        }
+
+        /* Overlay */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 99;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        .letter-header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #e74c3c;
+            padding-bottom: 20px;
+        }
+
+        .letter-header h1 {
+            color: #e74c3c;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .letter-content {
+            color: #333;
+            font-size: 1.1em;
+            line-height: 1.8;
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .photo-section {
+            margin: 30px 0;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(231, 76, 60, 0.3);
+        }
+
+        .photo-section img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .placeholder-photo {
+            width: 100%;
+            height: 300px;
+            background: linear-gradient(135deg, #f5a6d3, #f094d7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .placeholder-photo:hover {
+            transform: scale(1.02);
+        }
+
+        .animated-hearts {
+            text-align: center;
+            font-size: 3em;
+            margin: 30px 0;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .heart-anim {
+            animation: heartBeat 1s infinite;
+        }
+
+        .heart-anim:nth-child(1) { animation-delay: 0s; }
+        .heart-anim:nth-child(2) { animation-delay: 0.2s; }
+        .heart-anim:nth-child(3) { animation-delay: 0.4s; }
+        .heart-anim:nth-child(4) { animation-delay: 0.6s; }
+        .heart-anim:nth-child(5) { animation-delay: 0.8s; }
+
+        @keyframes heartBeat {
+            0%, 100% {
+                transform: scale(1);
+            }
+            25% {
+                transform: scale(1.3);
+            }
+            50% {
+                transform: scale(1);
+            }
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.3);
+            color: #e74c3c;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 2em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 101;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 105, 180, 0.2);
+            transform: scale(1.15);
+            filter: brightness(1.1);
+        }
+
+        .buttons {
+            text-align: center;
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1em;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(231, 76, 60, 0.4);
+        }
+
+        .signature {
+            text-align: right;
+            margin-top: 40px;
+            font-style: italic;
+            color: #666;
+            border-top: 2px solid #eee;
+            padding-top: 20px;
+        }
+
+        /* Background Music Control */
+        .music-control {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 100;
+            background: rgba(231, 76, 60, 0.9);
+            border: none;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .music-control:hover {
+            transform: scale(1.1);
+            background: rgba(231, 76, 60, 1);
+            box-shadow: 0 8px 30px rgba(231, 76, 60, 0.5);
+        }
+
+        .music-control:active {
+            transform: scale(0.95);
+        }
+
+        .floating-heart-inner {
+            position: fixed;
+            font-size: 1.5em;
+            pointer-events: none;
+            animation: float-up 3s ease-in forwards;
+            z-index: 50;
+        }
+
+        @keyframes float-up {
+            0% {
+                opacity: 1;
+                transform: translateY(0) translateX(0) rotate(0deg);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-500px) translateX(100px) rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background floating hearts -->
+    <div class="floating-heart" style="left: 10%; animation-delay: 0s;">❤️</div>
+    <div class="floating-heart" style="left: 20%; animation-delay: 2s;">💕</div>
+    <div class="floating-heart" style="left: 30%; animation-delay: 4s;">❤️</div>
+    <div class="floating-heart" style="left: 40%; animation-delay: 1s;">💕</div>
+    <div class="floating-heart" style="left: 50%; animation-delay: 3s;">❤️</div>
+    <div class="floating-heart" style="left: 60%; animation-delay: 0.5s;">💕</div>
+    <div class="floating-heart" style="left: 70%; animation-delay: 2.5s;">❤️</div>
+    <div class="floating-heart" style="left: 80%; animation-delay: 3.5s;">💕</div>
+    <div class="floating-heart" style="left: 90%; animation-delay: 1.5s;">❤️</div>
+
+    <!-- Envelope (Clickable) -->
+    <div class="envelope-container">
+        <div class="envelope" onclick="openLetter()">
+            <div class="envelope-text">
+                <div class="heart-icon">💌</div>
+                <h2>A Letter</h2>
+                <p>Click to open ✨</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overlay -->
+    <div class="overlay" id="overlay" onclick="closeLetter()"></div>
+
+    <!-- Letter Content -->
+    <div class="letter" id="letter">
+        <button class="close-btn" onclick="closeLetter()">💕</button>
+
+        <div class="letter-header">
+            <h1>I Love you name</h1>
+            <p>A Letter Just For You 💕</p>
+        </div>
+
+        <div class="animated-hearts">
+            <span class="heart-anim">❤️</span>
+            <span class="heart-anim">💕</span>
+            <span class="heart-anim">❤️</span>
+            <span class="heart-anim">💕</span>
+            <span class="heart-anim">❤️</span>
+        </div>
+
+        <div class="letter-content">
+            <p>Dear name,</p>
+            <p>Every moment with you is magical. You bring light and joy into my life in ways I never imagined possible. Your smile brightens my darkest days, and your presence makes everything feel right.</p>
+            <p>I love you more than words could ever express. You are my greatest treasure, my inspiration, and my forever.</p>
+        </div>
+
+        <div class="photo-section" id="photoSection">
+            <img src="" alt="Photo" style="width: 100%; height: auto; display: block;">
+        </div>
+
+        <div class="buttons">
+            <button onclick="addPhoto()">📷 Add Photo</button>
+            <button onclick="createFloatingHeart()">✨ Create Heart</button>
+        </div>
+
+        <div class="signature">
+            <p>Forever yours,<br><strong>With All My Love ❤️<br>Ankush</strong></p>
+        </div>
+    </div>
+
+    <!-- Hidden Background Audio with YouTube -->
+    <iframe id="backgroundMusic" width="0" height="0" src="Tera Ban Jaunga - Kabir Singh-(Mr-Jat.in).mp3" frameborder="0" allow="autoplay" style="display:none;"></iframe>
+
+    <!-- Music Control Button -->
+    <button class="music-control" id="musicControlBtn" onclick="toggleMusic()" title="Toggle Music">🎵</button>
+
+    <script>
+        function openLetter() {
+            document.getElementById('letter').classList.add('open');
+            document.getElementById('overlay').classList.add('active');
+            createConfetti();
+        }
+
+        function closeLetter() {
+            document.getElementById('letter').classList.remove('open');
+            document.getElementById('overlay').classList.remove('active');
+        }
+
+        function addPhoto() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const photoSection = document.getElementById('photoSection');
+                    photoSection.innerHTML = `<img src="${event.target.result}" alt="Our Photo">`;
+                };
+                reader.readAsDataURL(file);
+            };
+            input.click();
+        }
+
+        function createFloatingHeart() {
+            const hearts = ['❤️', '💕', '💖', '💗'];
+            const randomHeart = hearts[Math.floor(Math.random() * hearts.length)];
+            
+            const heart = document.createElement('div');
+            heart.className = 'floating-heart-inner';
+            heart.textContent = randomHeart;
+            heart.style.left = Math.random() * 100 + '%';
+            heart.style.top = '50%';
+            heart.style.fontSize = (1.5 + Math.random() * 2) + 'em';
+            
+            document.body.appendChild(heart);
+            setTimeout(() => heart.remove(), 3000);
+        }
+
+        function createConfetti() {
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => {
+                    createFloatingHeart();
+                }, i * 50);
+            }
+        }
+
+        // Music control function
+        let isPlaying = true;
+        function toggleMusic() {
+            const audio = document.getElementById('backgroundMusic');
+            const btn = document.getElementById('musicControlBtn');
+            
+            if (isPlaying) {
+                audio.pause();
+                btn.textContent = '🔇';
+                isPlaying = false;
+            } else {
+                audio.play().catch(e => console.log('Autoplay not allowed'));
+                btn.textContent = '🎵';
+                isPlaying = true;
+            }
+        }
+
+        // Auto play music when page loads
+        window.addEventListener('load', () => {
+            const audio = document.getElementById('backgroundMusic');
+            audio.play().catch(e => {
+                console.log('Autoplay not allowed. Click the music button to play.');
+            });
+        });
+
+        // Auto create floating hearts
+        setInterval(createFloatingHeart, 3000);
+    </script>
+</body>
+</html>
